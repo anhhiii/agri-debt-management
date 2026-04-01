@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: agri-debt-management
+  mongodb:
+      # Thay đổi URI này theo server MongoDB của bạn (Local hoặc MongoDB Atlas)
+    uri: mongodb://localhost:27017/agri_debt_management_db
+  jwt:
+    secret: BlinkyVacaSuperSecretKeyForDebtManagementSystem2026!
+    jwtExpirationMs: 900000 # 15 phút (Access Token)
+    jwtRefreshExpirationMs: 604800000 # 7 ngày (Refresh Token)
+  logging:
+    level:
+      com.manage.debt_management.security: DEBUG
+server:
+  port: 8081 # Cổng chạy backend
+
+# Chèn các mã permission thiếu (path:METHOD) từ Spring MVC vào collection permissions khi app khởi động xong
+app:
+  permissions:
+    sync-on-startup: true

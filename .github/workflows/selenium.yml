@@ -22,6 +22,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
       - name: Start MongoDB Service
         uses: supercharge/mongodb-github-action@1.11.0
         with:
@@ -36,7 +39,6 @@ jobs:
           JWT_SECRET: BlinkyVacaSuperSecretKeyForDebtManagementSystem2026!
           SERVER_PORT: 8081
         run: |
-          chmod +x mvnw
           ./mvnw spring-boot:run &
           echo "Waiting for Backend to start..."
           sleep 15

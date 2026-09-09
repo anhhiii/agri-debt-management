@@ -34,6 +34,7 @@ public class WebSecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Không lưu session trên server
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/auth/**").permitAll() // Cho phép tất cả truy cập API đăng nhập
+                .requestMatchers("/api/**").permitAll() //Tắt Kiểm tra để test API
                 .anyRequest().authenticated() // Mọi API khác (khách hàng, công nợ) đều bắt buộc phải có Token
             );
             

@@ -12,6 +12,7 @@ import com.manage.debt_management.model.PaymentRecord;
 /**
  * Khớp {@code calculateLoanDetailsFromContract} trong UI (shared/lib/contract-loan-details.ts).
  * Lãi %/tháng; đơn giản: lãi/ngày = principal * (r/30); kép: principal * ((1+r/30)^days - 1).
+ * <p>Tiền VND: làm tròn <strong>xuống</strong> tới đồng nguyên ({@link RoundingMode#DOWN} scale 0).
  */
 public final class ContractLoanCalculator {
 
@@ -76,9 +77,11 @@ public final class ContractLoanCalculator {
             remainingInterest = BigDecimal.ZERO;
         }
 
+        BigDecimal remainingForStatus = roundMoney(remainingAmount);
+
         LocalDate today = LocalDate.now();
-        boolean isOverdue = end != null && today.isAfter(end) && remainingAmount.compareTo(BigDecimal.ZERO) > 0;
-        boolean isCompleted = remainingAmount.compareTo(BigDecimal.ZERO) <= 0;
+        boolean isOverdue = end != null && today.isAfter(end) && remainingForStatus.compareTo(BigDecimal.ZERO) > 0;
+        boolean isCompleted = remainingForStatus.compareTo(BigDecimal.ZERO) <= 0;
 
         String loanStatus;
         if (isCompleted) {
@@ -119,8 +122,9 @@ public final class ContractLoanCalculator {
         return nz(c.getPrincipal());
     }
 
+    /** Đồng nguyên, làm tròn xuống (về phía 0 với số dương = cắt phần thập phân). */
     private static BigDecimal roundMoney(BigDecimal v) {
-        return v.setScale(2, RoundingMode.HALF_UP);
+        return v.setScale(0, RoundingMode.DOWN);
     }
 
     /**

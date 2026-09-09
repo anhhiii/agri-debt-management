@@ -1,5 +1,6 @@
 package com.manage.debt_management.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,23 +34,23 @@ public class CustomerController {
     private CustomerErrorFacade customerErrorFacade;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseApi<?>> createCustomer(@RequestBody CustomerRequestDTO customer) {
+    @PreAuthorize("hasAuthority(T(com.manage.debt_management.security.ApiPermissions).CUSTOMERS_POST)")
+    public ResponseEntity<ResponseApi<?>> createCustomer(@Valid @RequestBody CustomerRequestDTO customer) {
         try {
             Customer created = customerService.createCustomer(customer);
             CustomerResponseDTO response = CustomerResponseDTO.builder()
-                .id(created.getId())
-                .name(created.getName())
-                .phone(created.getPhone())
-                .address(created.getAddress())
-                .farmingLocation(created.getFarmingLocation())
-                .customerTier(created.getCustomerTier())
-                .lastPurchaseDate(created.getLastPurchaseDate())
-                .totalCurrentDebt(created.getTotalCurrentDebt())
-                .lifetimePurchaseValue(created.getLifetimePurchaseValue())
-                .createdAt(created.getCreatedAt())
-                .updatedAt(created.getUpdatedAt())
-                .build();
+                    .id(created.getId())
+                    .name(created.getName())
+                    .phone(created.getPhone())
+                    .address(created.getAddress())
+                    .farmingLocation(created.getFarmingLocation())
+                    .customerTier(created.getCustomerTier())
+                    .lastPurchaseDate(created.getLastPurchaseDate())
+                    .totalCurrentDebt(created.getTotalCurrentDebt())
+                    .lifetimePurchaseValue(created.getLifetimePurchaseValue())
+                    .createdAt(created.getCreatedAt())
+                    .updatedAt(created.getUpdatedAt())
+                    .build();
             return ResponseEntity.ok(ResponseApi.ok("Tạo khách hàng thành công", response));
         } catch (Exception e) {
             return customerErrorFacade.handleCreateCustomer(e);
@@ -57,18 +58,19 @@ public class CustomerController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority(T(com.manage.debt_management.security.ApiPermissions).CUSTOMERS_GET)")
     public ResponseEntity<ResponseApi<?>> getAllCustomers() {
         try {
             List<Customer> customers = customerService.getAllCustomers();
             return ResponseEntity.ok(ResponseApi.ok("Lấy danh sách khách hàng thành công", customers));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(ResponseApi.error("Lỗi khi lấy danh sách khách hàng: " + e.getMessage()));
+            return ResponseEntity.status(500)
+                    .body(ResponseApi.error("Lỗi khi lấy danh sách khách hàng: " + e.getMessage()));
         }
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority(T(com.manage.debt_management.security.ApiPermissions).CUSTOMERS_ID_GET)")
     public ResponseEntity<ResponseApi<?>> getCustomerById(@PathVariable String id) {
         try {
             CustomerDetailResponseDTO detail = customerService.getCustomerDetail(id);
@@ -79,7 +81,7 @@ public class CustomerController {
     }
 
     @GetMapping("/search")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority(T(com.manage.debt_management.security.ApiPermissions).CUSTOMERS_SEARCH_GET)")
     public ResponseEntity<ResponseApi<?>> searchCustomers(@RequestParam String keyword) {
         try {
             List<Customer> customers = customerService.searchCustomers(keyword);
@@ -90,26 +92,26 @@ public class CustomerController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority(T(com.manage.debt_management.security.ApiPermissions).CUSTOMERS_ID_PUT)")
     public ResponseEntity<ResponseApi<?>> updateCustomer(
-            @PathVariable String id, 
-            @RequestBody CustomerRequestDTO customer) {
+            @PathVariable String id,
+            @Valid @RequestBody CustomerRequestDTO customer) {
         try {
             Customer updated = customerService.updateCustomer(id, customer);
             CustomerResponseDTO response = CustomerResponseDTO.builder()
-                .id(updated.getId())
-                .name(updated.getName())
-                .phone(updated.getPhone())
-                .address(updated.getAddress())
-                .farmingLocation(updated.getFarmingLocation())
-                .customerTier(updated.getCustomerTier())
-                .lastPurchaseDate(updated.getLastPurchaseDate())
-                .totalCurrentDebt(updated.getTotalCurrentDebt())
-                .lifetimePurchaseValue(updated.getLifetimePurchaseValue())
-                .createdAt(updated.getCreatedAt())
-                .updatedAt(updated.getUpdatedAt())
-                .build();
-                
+                    .id(updated.getId())
+                    .name(updated.getName())
+                    .phone(updated.getPhone())
+                    .address(updated.getAddress())
+                    .farmingLocation(updated.getFarmingLocation())
+                    .customerTier(updated.getCustomerTier())
+                    .lastPurchaseDate(updated.getLastPurchaseDate())
+                    .totalCurrentDebt(updated.getTotalCurrentDebt())
+                    .lifetimePurchaseValue(updated.getLifetimePurchaseValue())
+                    .createdAt(updated.getCreatedAt())
+                    .updatedAt(updated.getUpdatedAt())
+                    .build();
+
             return ResponseEntity.ok(ResponseApi.ok("Cập nhật khách hàng thành công", response));
         } catch (Exception e) {
             return customerErrorFacade.handleUpdateCustomer(e);
@@ -117,7 +119,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority(T(com.manage.debt_management.security.ApiPermissions).CUSTOMERS_ID_DELETE)")
     public ResponseEntity<ResponseApi<?>> deleteCustomer(@PathVariable String id) {
         try {
             customerService.deleteCustomer(id);

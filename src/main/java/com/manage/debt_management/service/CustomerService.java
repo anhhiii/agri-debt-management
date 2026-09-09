@@ -39,23 +39,24 @@ public class CustomerService {
     public Customer createCustomer(CustomerRequestDTO customer) {
         customerValidationFacade.validateCreate(customer);
         Customer newCustomer = Customer.builder()
-            .phone(customer.getPhone())
-            .name(customer.getName())
-            .address(customer.getAddress())
-            .farmingLocation(customer.getFarmingLocation())
-            .customerTier(customer.getCustomerTier())
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
-            .build();
+                .phone(customer.getPhone())
+                .name(customer.getName())
+                .address(customer.getAddress())
+                .farmingLocation(customer.getFarmingLocation())
+                .customerTier(customer.getCustomerTier())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
         return customerRepository.save(newCustomer);
     }
+
     public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
+        return customerRepository.findAllByOrderByCreatedAtDesc();
     }
 
     public Customer getCustomerById(String id) {
         return customerRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Khách hàng không tồn tại"));
+                .orElseThrow(() -> new IllegalArgumentException("Khách hàng không tồn tại"));
     }
 
     /**
@@ -127,21 +128,22 @@ public class CustomerService {
     }
 
     public Customer updateCustomer(String id, CustomerRequestDTO request) {
-        customerValidationFacade.validateUpdate(id, request);      
+        customerValidationFacade.validateUpdate(id, request);
         Customer existingCustomer = getCustomerById(id);
         if (!existingCustomer.getPhone().equals(request.getPhone())) {
             Optional<Customer> phoneCheck = customerRepository.findByPhone(request.getPhone());
             if (phoneCheck.isPresent()) {
-                throw new ConflictException("Số điện thoại đã tồn tại cho một khách hàng khác", "phone", request.getPhone());
+                throw new ConflictException("Số điện thoại đã tồn tại cho một khách hàng khác", "phone",
+                        request.getPhone());
             }
         }
         existingCustomer.setName(request.getName());
         existingCustomer.setPhone(request.getPhone());
         existingCustomer.setAddress(request.getAddress());
-        existingCustomer.setFarmingLocation(request.getFarmingLocation());     
+        existingCustomer.setFarmingLocation(request.getFarmingLocation());
         if (request.getCustomerTier() != null) {
             existingCustomer.setCustomerTier(request.getCustomerTier());
-        } 
+        }
         existingCustomer.setUpdatedAt(LocalDateTime.now());
         return customerRepository.save(existingCustomer);
     }

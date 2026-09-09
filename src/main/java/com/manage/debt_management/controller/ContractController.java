@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import com.manage.debt_management.constant.HttpStatusConstants;
 import com.manage.debt_management.dto.ContractRequestDTO;
 import com.manage.debt_management.dto.ContractResponseDTO;
 import com.manage.debt_management.dto.PaymentRecordResponseDTO;
@@ -39,7 +42,7 @@ public class ContractController {
     
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    @PreAuthorize("hasAuthority(T(com.manage.debt_management.security.ApiPermissions).CONTRACTS_ID_GET)")
     public ResponseEntity<ResponseApi<ContractResponseDTO>> getContractDetail(@PathVariable String id) {
         try {
             InstallmentContract contract = contractService.findById(id);
@@ -51,24 +54,34 @@ public class ContractController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority(T(com.manage.debt_management.security.ApiPermissions).CONTRACTS_ID_DELETE)")
     public ResponseEntity<ResponseApi<?>> delete(@PathVariable String id) {
         try {
             contractService.deleteById(id);
             return ResponseEntity.ok(ResponseApi.ok("Xoá thành công"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatusConstants.NOT_FOUND)
+                    .body(ResponseApi.error(e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatusConstants.BAD_REQUEST)
+                    .body(ResponseApi.error(e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(ResponseApi.error("Lỗi khi xoá" + e.getMessage()));
+            return ResponseEntity.status(HttpStatusConstants.INTERNAL_SERVER_ERROR)
+                    .body(ResponseApi.error("Lỗi khi xoá: " + e.getMessage()));
         }
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    @PreAuthorize("hasAuthority(T(com.manage.debt_management.security.ApiPermissions).CONTRACTS_POST)")
     public ResponseEntity<ResponseApi<?>> create(@RequestBody ContractRequestDTO req) {
         try {
             InterestType interestType = req.getInterestType() != null
                     ? req.getInterestType()
                     : InterestType.SIMPLE;
-
+            // 1. Lấy identity của người đang đăng nhập
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            
+         
             InstallmentContract contract = InstallmentContract.builder()
                     .customerId(req.getCustomerId())
                     .customerName(req.getCustomerName())
@@ -80,7 +93,7 @@ public class ContractController {
                     .startDate(req.getStartDate())
                     .endDate(req.getEndDate())
                     .note(req.getNote())
-                    .createdBy(req.getCreatedBy())
+                    .createdBy(auth.getName())
                     .build();
 
             InstallmentContract created = contractService.create(contract);
@@ -97,8 +110,7 @@ public class ContractController {
     }
 
     @GetMapping
-    // @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
-    @PreAuthorize("hasAuthority('/api/v1/contracts:GET')")
+    @PreAuthorize("hasAuthority(T(com.manage.debt_management.security.ApiPermissions).CONTRACTS_GET)")
     public ResponseEntity<ResponseApi<?>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
@@ -126,7 +138,7 @@ public class ContractController {
         java.math.BigDecimal interestPerDay = java.math.BigDecimal.ZERO;
         if (details.getTotalDays() > 0) {
             interestPerDay = details.getTotalInterest()
-                    .divide(java.math.BigDecimal.valueOf(details.getTotalDays()), 2, java.math.RoundingMode.HALF_UP);
+                    .divide(java.math.BigDecimal.valueOf(details.getTotalDays()), 0, java.math.RoundingMode.DOWN);
         }
         return ContractResponseDTO.builder()
                 .id(c.getId())

@@ -1,8 +1,8 @@
 package com.manage.debt_management.security;
 
-
 import java.security.Key;
 import java.util.Date;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.manage.debt_management.enums.ERole;
@@ -15,10 +15,15 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtils {
 
-    // Khóa bí mật (Secret Key) dùng để ký Token. Trong thực tế nên để trong file application.yml
-    private final String jwtSecret = "BlinkyVacaSuperSecretKeyForDebtManagementSystem2026!";
-    // Thời gian sống của Token (VD: 24 giờ)
-    private final int jwtExpirationMs = 86400000;
+    private final String jwtSecret;
+    private final int jwtExpirationMs;
+
+    public JwtUtils(
+            @Value("${spring.jwt.secret}") String jwtSecret,
+            @Value("${spring.jwt.jwtExpirationMs}") int jwtExpirationMs) {
+        this.jwtSecret = jwtSecret;
+        this.jwtExpirationMs = jwtExpirationMs;
+    }
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());

@@ -18,7 +18,7 @@ public class DashboardController {
     private final DashboardService dashboardService;
 
     @GetMapping("/stats")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority(T(com.manage.debt_management.security.ApiPermissions).DASHBOARD_STATS_GET)")
     public ResponseEntity<ResponseApi<DashboardOverviewDTO>> stats() {
         try {
             DashboardOverviewDTO data = dashboardService.getOverviewStats();

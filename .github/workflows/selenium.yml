@@ -1,0 +1,47 @@
+name: Selenium E2E Tests
+
+on:
+  push:
+    branches: [ "main", "dev", "feat/*" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  selenium-tests:
+    name: Run Selenium E2E Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Start MongoDB Service
+        uses: supercharge/mongodb-github-action@1.11.0
+        with:
+          mongodb-version: '7.0'
+
+      - name: Build project
+        run: ./mvnw -B clean compile
+
+      - name: Run Spring Boot App in Background
+        env:
+          DATABASE_URL: mongodb://localhost:27017/agri_debt_management_db
+          JWT_SECRET: BlinkyVacaSuperSecretKeyForDebtManagementSystem2026!
+          SERVER_PORT: 8081
+        run: |
+          chmod +x mvnw
+          ./mvnw spring-boot:run &
+          echo "Waiting for Backend to start..."
+          sleep 15
+
+      - name: Run Selenium E2E Tests (Headless Chrome)
+        env:
+          HEADLESS: "true"
+        run: ./mvnw -B test -Dtest=AuthAndSecurityTest,ContractAndPaymentTest

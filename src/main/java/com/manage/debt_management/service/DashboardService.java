@@ -25,6 +25,8 @@ public class DashboardService {
         long completedCount = 0;
         BigDecimal totalCollected = BigDecimal.ZERO;
         BigDecimal totalRemaining = BigDecimal.ZERO;
+        BigDecimal totalInterest = BigDecimal.ZERO;
+        BigDecimal totalPrincipalLent = BigDecimal.ZERO;
 
         for (InstallmentContract c : allContracts) {
             if (c.getStatus() == ContractStatus.ACTIVE)
@@ -43,6 +45,11 @@ public class DashboardService {
             if (rem.compareTo(BigDecimal.ZERO) > 0) {
                 totalRemaining = totalRemaining.add(rem);
             }
+
+            totalInterest = totalInterest.add(details.getTotalInterest() != null ? details.getTotalInterest() : BigDecimal.ZERO);
+            // Gốc thực cho vay = giá trị HĐ − trả trước (hoặc principal trên HĐ), không tính tiền khách đã trả trước.
+            BigDecimal ip = details.getInitialPrincipal() != null ? details.getInitialPrincipal() : BigDecimal.ZERO;
+            totalPrincipalLent = totalPrincipalLent.add(ip);
         }
 
         return DashboardOverviewDTO.builder()
@@ -52,6 +59,8 @@ public class DashboardService {
                 .completedCount(completedCount)
                 .totalCollected(totalCollected)
                 .totalRemaining(totalRemaining)
+                .totalInterest(totalInterest)
+                .totalPrincipalLent(totalPrincipalLent)
                 .build();
     }
 }

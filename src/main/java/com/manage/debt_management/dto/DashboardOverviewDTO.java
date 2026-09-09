@@ -18,4 +18,8 @@ public class DashboardOverviewDTO {
     private BigDecimal totalCollected;
     /** Tổng còn phải thu (gốc + lãi dự kiến − đã thu, theo cùng logic tính như UI). */
     private BigDecimal totalRemaining;
+    /** Tổng tiền lãi dự kiến (cộng lãi từng hợp đồng, đã làm tròn theo quy tắc hệ thống). */
+    private BigDecimal totalInterest;
+    /** Tổng tiền thực cho vay (gốc trả góp): giá trị HĐ − trả trước, không gồm phần khách đã trả trước. */
+    private BigDecimal totalPrincipalLent;
 }

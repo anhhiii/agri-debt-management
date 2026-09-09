@@ -1,0 +1,26 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: manage-interest-mongodb
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: manage-interest-backend
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    ports:
+      - '8081:8081'
+    environment:
+      # Khớp application.yml: spring.mongodb.uri = ${DATABASE_URL}
+      DATABASE_URL: mongodb://mongodb:27017/agri_debt_management_db
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+
+volumes:
+  mongo_data:
